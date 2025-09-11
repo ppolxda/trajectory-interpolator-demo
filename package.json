@@ -1,0 +1,21 @@
+{
+  "name": "track_ts",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/plotly.js": "^3.0.4",
+    "@types/plotly.js-dist-min": "^2.3.4",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.5"
+  },
+  "dependencies": {
+    "cubic-spline-ts": "^3.0.8",
+    "plotly.js-dist-min": "^3.1.0"
+  }
+}
