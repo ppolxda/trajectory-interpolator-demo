@@ -6,6 +6,7 @@ import { testData } from "./data";
 import { TrajectoryInterpolator } from "./trajectoryUtils";
 import type { Point } from "./trajectoryUtils";
 import Plotly from "plotly.js-dist-min";
+import BSpline from "b-spline";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div>
@@ -21,7 +22,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 `;
 
 // 数据转换
-const points: Point[] = testData.positions.map((p: any) => ({
+const points = testData.positions.map((p: any) => ({
   ts: p.ts,
   x: p.pos.x,
   y: p.pos.y,
@@ -29,25 +30,55 @@ const points: Point[] = testData.positions.map((p: any) => ({
   type: p.type,
 }));
 
-const interpolator = new TrajectoryInterpolator(points);
-const fullTrajectory = interpolator.getFullMissTrajectory();
+const degree: number = 3; // 三次 B-spline
+const n = points.length - 1;
+const knotVector = Array(n + degree + 2)
+  .fill(0)
+  .map((_, i) => i / (n + degree + 1)); // 均匀节点向量
+
+// 3. 采样曲线
+const count: number = 100;
+const xs: number[] = [];
+const ys: number[] = [];
+const zs: number[] = [];
+
+for (let i = 0; i <= count; i++) {
+  const t = i / count;
+  xs.push(
+    BSpline(
+      t,
+      degree,
+      points.map((p) => p.x),
+      knotVector
+    )
+  );
+  ys.push(
+    BSpline(
+      t,
+      degree,
+      points.map((p) => p.y),
+      knotVector
+    )
+  );
+  zs.push(
+    BSpline(
+      t,
+      degree,
+      points.map((p) => p.z),
+      knotVector
+    )
+  );
+}
 
 // 展示部分结果
 const resultDiv = document.getElementById("trajectory-result");
 
 if (resultDiv) {
-  console.debug("aaaa");
-
-  // 轨迹点提取
-  const xs = fullTrajectory.map((p) => p.x);
-  const ys = fullTrajectory.map((p) => p.y);
-  const zs = fullTrajectory.map((p) => p.z);
-
   // Plotly 3D 散点图
   const trace = {
-    x: xs,
-    y: ys,
-    z: zs,
+    x: xs as number[],
+    y: ys as number[],
+    z: zs as number[],
     mode: "markers+lines",
     type: "scatter3d",
     marker: { size: 3, color: zs, colorscale: "Viridis", opacity: 0.8 },
